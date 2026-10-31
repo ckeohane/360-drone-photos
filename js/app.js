@@ -35,17 +35,89 @@ function showMessage(text, isError = false) {
   viewEl.replaceChildren(p);
 }
 
-// The page functions below are placeholders. Steps 4 and 5 fill them in.
+function makeCard({ href, thumb, title, subtitle }) {
+  const card = document.createElement('a');
+  card.className = 'card';
+  card.href = href;
+
+  const img = document.createElement('img');
+  img.className = 'card__media';
+  img.src = thumb;
+  img.alt = '';
+  img.loading = 'lazy';
+  img.decoding = 'async';
+
+  const text = document.createElement('div');
+  text.className = 'card__text';
+  const heading = document.createElement('div');
+  heading.className = 'card__title';
+  heading.textContent = title;
+  text.append(heading);
+  if (subtitle) {
+    const sub = document.createElement('div');
+    sub.className = 'card__subtitle';
+    sub.textContent = subtitle;
+    text.append(sub);
+  }
+
+  card.append(img, text);
+  return card;
+}
+
+function showGrid(cards) {
+  const grid = document.createElement('div');
+  grid.className = 'grid';
+  grid.append(...cards);
+  viewEl.replaceChildren(grid);
+}
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+
 function showHome() {
   setBar(APP_NAME, null);
-  showMessage(`Home: ${library.folders.length} folders`);
+  if (library.folders.length === 0) return showMessage('No photos yet.');
+  showGrid(
+    library.folders.map((folder) =>
+      makeCard({
+        href: `#/${encodeURIComponent(folder.slug)}`,
+        thumb: folder.cover,
+        title: folder.name,
+        subtitle: plural(folder.photos.length, 'photo'),
+      }),
+    ),
+  );
 }
 
 function showFolder(folder) {
   setBar(folder.name, '#/');
-  showMessage(`Folder "${folder.name}": ${folder.photos.length} photos`);
+  showGrid(
+    folder.photos.map((photo) =>
+      makeCard({
+        href: `#/${encodeURIComponent(folder.slug)}/${encodeURIComponent(photo.slug)}`,
+        thumb: photo.thumb,
+        title: photo.name,
+        subtitle: photo.type === 'flat' ? 'Flat photo' : null,
+      }),
+    ),
+  );
 }
 
+// Material ripple: a circle grows from the touch point on any card.
+document.addEventListener('pointerdown', (event) => {
+  const card = event.target.closest('.card');
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  const size = Math.hypot(rect.width, rect.height) * 2;
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  ripple.style.width = ripple.style.height = `${size}px`;
+  ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+  ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+  card.append(ripple);
+  ripple.addEventListener('animationend', () => ripple.remove());
+});
+
+// Placeholder until step 5 adds the viewer.
 function showViewer(folder, photo) {
   setBar(photo.name, `#/${encodeURIComponent(folder.slug)}`);
   showMessage(`Viewer: ${photo.name} (${photo.type})`);

@@ -88,6 +88,86 @@ body {
   padding: 16px max(16px, env(safe-area-inset-left)) 32px;
 }
 
+/* Cards: one column on phones, more as the screen widens */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 600px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (min-width: 900px) {
+  .grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.card {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border-radius: var(--md-shape-medium);
+  background: var(--md-surface-container);
+  color: var(--md-on-surface);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--md-on-surface);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+}
+
+.card:hover::after { opacity: 0.08; }
+.card:active::after { opacity: 0.12; }
+
+.card__media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  background: var(--md-outline-variant);
+}
+
+.card__text { padding: 12px 16px 16px; }
+
+.card__title {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5rem;
+  overflow-wrap: anywhere;
+}
+
+.card__subtitle {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: var(--md-on-surface-variant);
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--md-on-surface);
+  opacity: 0.12;
+  pointer-events: none;
+  transform: scale(0);
+  animation: ripple 450ms ease-out forwards;
+}
+
+@keyframes ripple {
+  to { transform: scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple { display: none; }
+}
+
 .message {
   margin: 48px 0;
   text-align: center;
