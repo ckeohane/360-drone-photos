@@ -1,0 +1,102 @@
+/* Material 3 colour roles, light and dark. Colours follow the device setting. */
+:root {
+  --md-primary: #006a6a;
+  --md-on-primary: #ffffff;
+  --md-surface: #f4fbfa;
+  --md-on-surface: #161d1d;
+  --md-on-surface-variant: #3f4948;
+  --md-surface-container: #e9f0ef;
+  --md-outline-variant: #bec9c8;
+  --md-error: #ba1a1a;
+
+  --md-shape-medium: 12px;
+  --md-bar-height: 64px;
+  --md-state-hover: rgb(0 0 0 / 0.08);
+  --md-state-press: rgb(0 0 0 / 0.12);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-primary: #4cdada;
+    --md-on-primary: #003737;
+    --md-surface: #0e1415;
+    --md-on-surface: #dde4e3;
+    --md-on-surface-variant: #bec9c8;
+    --md-surface-container: #1a2121;
+    --md-outline-variant: #3f4948;
+    --md-error: #ffb4ab;
+
+    --md-state-hover: rgb(255 255 255 / 0.08);
+    --md-state-press: rgb(255 255 255 / 0.12);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+  font: 400 1rem/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Top app bar */
+.app-bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: calc(var(--md-bar-height) + env(safe-area-inset-top));
+  padding: env(safe-area-inset-top) 4px 0 max(4px, env(safe-area-inset-left));
+  background: var(--md-surface);
+  color: var(--md-on-surface);
+}
+
+.app-bar__title {
+  margin: 0 12px;
+  font-size: 1.375rem;
+  font-weight: 400;
+  line-height: 1.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-bar__back {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  color: var(--md-on-surface);
+}
+
+.app-bar__back[hidden] { display: none; }
+.app-bar__back svg { width: 24px; height: 24px; fill: currentColor; }
+.app-bar__back:hover { background: var(--md-state-hover); }
+.app-bar__back:active { background: var(--md-state-press); }
+
+/* Page content */
+.view {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px max(16px, env(safe-area-inset-left)) 32px;
+}
+
+.message {
+  margin: 48px 0;
+  text-align: center;
+  color: var(--md-on-surface-variant);
+}
+
+.message--error { color: var(--md-error); }
+
+:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
