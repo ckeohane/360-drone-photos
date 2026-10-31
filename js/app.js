@@ -46,6 +46,8 @@ function makeCard({ href, thumb, title, subtitle }) {
   img.alt = '';
   img.loading = 'lazy';
   img.decoding = 'async';
+  // A missing thumbnail leaves a plain grey box instead of a broken-image icon.
+  img.addEventListener('error', () => img.classList.add('card__media--missing'));
 
   const text = document.createElement('div');
   text.className = 'card__text';

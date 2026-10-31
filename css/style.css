@@ -135,6 +135,8 @@ body {
   background: var(--md-outline-variant);
 }
 
+.card__media--missing { visibility: hidden; }
+
 .card__text { padding: 12px 16px 16px; }
 
 .card__title {
@@ -169,6 +171,12 @@ body {
 }
 
 /* Viewer: the photo fills the screen below the app bar */
+html:has(.is-viewer),
+.is-viewer {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .is-viewer .view {
   max-width: none;
   padding: 0;
