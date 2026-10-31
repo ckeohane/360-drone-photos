@@ -1,7 +1,7 @@
 // Makes web copies of the photos in Photos/ and writes photos.json.
 // Usage: node build.mjs   (macOS only, uses the built-in sips tool)
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -98,7 +98,7 @@ for (const folderName of folderNames) {
   mkdirSync(outDir, { recursive: true });
 
   const files = readdirSync(join(SRC, folderName))
-    .filter((f) => /\.jpe?g$/i.test(f) && !f.startsWith('.'))
+    .filter((f) => /\.(jpe?g|png)$/i.test(f) && !f.startsWith('.'))
     .sort(byName);
 
   const photos = [];
@@ -125,7 +125,24 @@ for (const folderName of folderNames) {
   folders.push({ name, slug: folderSlug, cover: photos[0].thumb, photos });
 }
 
+// Delete web copies whose original photo has been removed.
+const wanted = new Set(
+  folders.flatMap((f) => f.photos.flatMap((p) => [join(ROOT, p.file), join(ROOT, p.thumb)])),
+);
+let removed = 0;
+for (const entry of readdirSync(OUT, { withFileTypes: true })) {
+  const dir = join(OUT, entry.name);
+  if (!entry.isDirectory()) continue;
+  for (const file of readdirSync(dir)) {
+    if (!wanted.has(join(dir, file))) {
+      rmSync(join(dir, file), { force: true });
+      removed++;
+    }
+  }
+  if (readdirSync(dir).length === 0) rmSync(dir, { recursive: true });
+}
+
 writeFileSync(join(ROOT, 'photos.json'), JSON.stringify({ folders }, null, 2) + '\n');
 
 const total = folders.reduce((n, f) => n + f.photos.length, 0);
-console.log(`${folders.length} folders, ${total} photos (${made} made, ${kept} already done, ${flat} flat)`);
+console.log(`${folders.length} folders, ${total} photos (${made} made, ${kept} already done, ${flat} flat, ${removed} old files removed)`);
