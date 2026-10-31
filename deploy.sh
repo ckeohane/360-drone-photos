@@ -8,6 +8,7 @@ cd "$(dirname "$0")"
 rm -rf deploy
 mkdir deploy
 cp -R index.html photos.json css js vendor site deploy/
+find deploy -name .DS_Store -delete
 
 echo "deploy/ holds $(find deploy -type f | wc -l | tr -d ' ') files, $(du -sh deploy | cut -f1)"
 
