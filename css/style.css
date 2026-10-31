@@ -182,12 +182,28 @@ html:has(.is-viewer),
   padding: 0;
 }
 
+/* The photo uses the whole screen and the app bar floats over its top edge. */
+.is-viewer .app-bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  background: color-mix(in srgb, var(--md-surface) 75%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
 .viewer {
   position: relative;
   width: 100%;
-  height: calc(100vh - var(--md-bar-height) - env(safe-area-inset-top));
-  height: calc(100dvh - var(--md-bar-height) - env(safe-area-inset-top));
+  height: 100vh;
+  height: 100dvh;
   background: #000;
+}
+
+/* Phones turned sideways: a slimmer app bar. */
+@media (max-height: 500px) {
+  :root { --md-bar-height: 48px; }
+  .app-bar__title { font-size: 1.125rem; }
+  .app-bar__back { width: 44px; height: 44px; }
 }
 
 .flat {
