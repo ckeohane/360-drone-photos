@@ -85,6 +85,7 @@ const photos = library.folders.flatMap((f) => f.photos.map((p) => ({ folder: f, 
       if (!photo.name) problems.push(`${folder.name}: a photo has no name`);
       if (!slugOk(photo.slug)) problems.push(`${folder.name}: bad photo slug: ${photo.slug}`);
       if (photoSlugs.has(photo.slug)) problems.push(`${folder.name}: duplicate photo slug: ${photo.slug}`);
+      if (String(photo.slug).endsWith('-thumb')) problems.push(`${folder.name}: photo slug ends in -thumb: ${photo.slug}`);
       photoSlugs.add(photo.slug);
       if (!['360', 'flat'].includes(photo.type)) problems.push(`${photo.slug}: unknown type ${photo.type}`);
     }
@@ -186,6 +187,164 @@ const photos = library.folders.flatMap((f) => f.photos.map((p) => ({ folder: f, 
     for (const spec of specifiers) if (spec.startsWith('.')) exists(path, spec, 'import');
   }
   check('A7', 'Pages reference real files', problems);
+}
+
+// A8: page routing works. A tiny pretend browser runs js/app.js and follows
+// each route, so a broken router fails here instead of on the phone.
+{
+  const problems = [];
+  const handlers = {};
+  class El {
+    constructor(tag) { this.tag = tag; this.children = []; this.textContent = ''; this.hidden = false; this.href = ''; this.className = ''; }
+    append(...nodes) { this.children.push(...nodes); }
+    replaceChildren(...nodes) { this.children = nodes; }
+    addEventListener() {}
+  }
+  const els = { view: new El('main'), title: new El('h1'), back: new El('a') };
+  const bodyClasses = new Set();
+  globalThis.document = {
+    title: '',
+    getElementById: (id) => els[id],
+    createElement: (tag) => new El(tag),
+    addEventListener() {},
+    body: { classList: { add: (c) => bodyClasses.add(c), remove: (c) => bodyClasses.delete(c) } },
+  };
+  globalThis.window = { addEventListener: (type, fn) => { handlers[type] = fn; }, scrollTo() {} };
+  globalThis.location = { hash: '' };
+  globalThis.fetch = async () => ({ ok: true, json: async () => library });
+
+  // The viewer library cannot load outside a browser; the app reports that
+  // with console.error, which would only be noise here.
+  const realConsoleError = console.error;
+  console.error = () => {};
+  await import(`${join(ROOT, 'js', 'app.js')}?test=${Date.now()}`);
+  const tick = () => new Promise((resolve) => setTimeout(resolve, 20));
+  await tick();
+
+  const go = async (hash) => {
+    location.hash = hash;
+    if (handlers.hashchange) handlers.hashchange();
+    await tick();
+  };
+  const cards = () => (els.view.children[0]?.children ?? []);
+  const expect = (label, actual, wanted) => {
+    if (actual !== wanted) problems.push(`${label}: got ${JSON.stringify(actual)}, wanted ${JSON.stringify(wanted)}`);
+  };
+
+  if (!handlers.hashchange) problems.push('the page does not listen for route changes (hashchange)');
+  const first = library.folders[0];
+  const firstPhoto = first.photos[0];
+
+  expect('home title', els.title.textContent, '360 Photos');
+  expect('home back button hidden', els.back.hidden, true);
+  expect('home folder cards', cards().length, library.folders.length);
+  expect('home first card link', cards()[0]?.href, `#/${first.slug}`);
+
+  await go(`#/${first.slug}`);
+  expect('folder title', els.title.textContent, first.name);
+  expect('folder back link', els.back.href, '#/');
+  expect('folder back button shown', els.back.hidden, false);
+  expect('folder photo cards', cards().length, first.photos.length);
+  expect('folder first card link', cards()[0]?.href, `#/${first.slug}/${firstPhoto.slug}`);
+
+  await go(`#/${first.slug}/${firstPhoto.slug}`);
+  expect('viewer title', els.title.textContent, firstPhoto.name);
+  expect('viewer back link', els.back.href, `#/${first.slug}`);
+  expect('viewer full-screen mode', bodyClasses.has('is-viewer'), true);
+
+  await go(`#/${first.slug}`);
+  expect('full-screen mode ends after leaving the viewer', bodyClasses.has('is-viewer'), false);
+
+  await go('#/no-such-folder');
+  expect('unknown folder message', /not found/i.test(els.view.children[0]?.textContent ?? ''), true);
+  await go(`#/${first.slug}/no-such-photo`);
+  expect('unknown photo message', /not found/i.test(els.view.children[0]?.textContent ?? ''), true);
+
+  await go('#/');
+  expect('home again after going back', cards().length, library.folders.length);
+  console.error = realConsoleError;
+  check('A8', 'Page routing works (simulated browser)', problems);
+}
+
+// B1-B3: the build script. Each case builds into a throwaway copy, so it
+// needs macOS (sips). Skipped elsewhere.
+{
+  const { mkdtempSync, mkdirSync, copyFileSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const haveSips = (() => { try { execFileSync('sips', ['--version'], { stdio: 'ignore' }); return true; } catch { return false; } })();
+
+  if (!haveSips) {
+    console.log('SKIP B1-B3  build script checks need macOS (sips)');
+  } else {
+    const sample = join(ROOT, library.folders[0].photos[0].file);
+    const makeRoot = () => {
+      const dir = mkdtempSync(join(tmpdir(), 'photo-build-test-'));
+      copyFileSync(join(ROOT, 'build.mjs'), join(dir, 'build.mjs'));
+      mkdirSync(join(dir, 'Photos', 'Trip'), { recursive: true });
+      return dir;
+    };
+    const makeImage = (dir, name, width, height) => {
+      execFileSync('sips', ['-z', String(height), String(width), sample, '--out', join(dir, 'Photos', 'Trip', name)], { stdio: 'ignore' });
+    };
+    const build = (dir) => {
+      try {
+        const out = execFileSync('node', ['build.mjs'], { cwd: dir, encoding: 'utf8', stdio: 'pipe' });
+        return { code: 0, text: out };
+      } catch (error) {
+        return { code: error.status, text: `${error.stdout ?? ''}${error.stderr ?? ''}` };
+      }
+    };
+    const widthOf = (file) => jpegSize(file)?.width;
+
+    // B1: small photos are never enlarged
+    {
+      const problems = [];
+      const dir = makeRoot();
+      makeImage(dir, 'small-flat.jpg', 300, 200);
+      makeImage(dir, 'small-pano.jpg', 1000, 500);
+      const run = build(dir);
+      if (run.code !== 0) problems.push(`build failed: ${run.text.trim().split('\n').pop()}`);
+      else {
+        const folder = join(dir, 'site', 'photos', 'trip');
+        expectWidth(problems, 'small flat viewing copy', widthOf(join(folder, 'small-flat.jpg')), 300);
+        expectWidth(problems, 'small flat thumbnail', widthOf(join(folder, 'small-flat-thumb.jpg')), 300);
+        expectWidth(problems, 'small pano viewing copy', widthOf(join(folder, 'small-pano.jpg')), 1000);
+        expectWidth(problems, 'small pano thumbnail', widthOf(join(folder, 'small-pano-thumb.jpg')), 480);
+      }
+      rmSync(dir, { recursive: true, force: true });
+      check('B1', 'Build never enlarges small photos', problems);
+    }
+
+    // B2: a photo name that would clash with a thumbnail is refused
+    {
+      const problems = [];
+      const dir = makeRoot();
+      makeImage(dir, 'a.jpg', 400, 200);
+      makeImage(dir, 'a-thumb.jpg', 400, 200);
+      const run = build(dir);
+      if (run.code === 0) problems.push('build accepted photos "a" and "a-thumb", which share a file name');
+      else if (!/a-thumb/.test(run.text)) problems.push('error does not name the clashing photo');
+      rmSync(dir, { recursive: true, force: true });
+      check('B2', 'Build refuses names that clash with thumbnails', problems);
+    }
+
+    // B3: an unreadable image stops the build and names the file
+    {
+      const problems = [];
+      const dir = makeRoot();
+      makeImage(dir, 'good.jpg', 400, 200);
+      writeFileSync(join(dir, 'Photos', 'Trip', 'broken.jpg'), 'this is not an image');
+      const run = build(dir);
+      if (run.code === 0) problems.push('build succeeded with a broken image');
+      else if (!/broken\.jpg/.test(run.text)) problems.push(`error does not name the broken file: ${run.text.trim().split('\n').slice(-2).join(' | ').slice(0, 200)}`);
+      rmSync(dir, { recursive: true, force: true });
+      check('B3', 'Build names the file it cannot read', problems);
+    }
+  }
+}
+
+function expectWidth(problems, label, actual, wanted) {
+  if (actual !== wanted) problems.push(`${label}: ${actual} px wide, wanted ${wanted}`);
 }
 
 let failed = 0;

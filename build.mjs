@@ -24,15 +24,26 @@ const slugify = (text) =>
 
 const byName = (a, b) => a.localeCompare(b, undefined, { numeric: true });
 
+// The first useful line of a failed command, without Node's stack trace.
+const firstLine = (error) =>
+  String(error.stderr || error.message).trim().split('\n').find(Boolean) ?? 'unknown error';
+
+// Problems in the photos are reported as one clear message, not a stack trace.
+process.on('uncaughtException', (error) => {
+  console.error(error.message);
+  process.exit(1);
+});
+
 function sips(...args) {
   return execFileSync('sips', args, { encoding: 'utf8' });
 }
 
 function dimensions(file) {
   const out = sips('-g', 'pixelWidth', '-g', 'pixelHeight', file);
-  const width = Number(/pixelWidth: (\d+)/.exec(out)[1]);
-  const height = Number(/pixelHeight: (\d+)/.exec(out)[1]);
-  return { width, height };
+  const width = /pixelWidth: (\d+)/.exec(out)?.[1];
+  const height = /pixelHeight: (\d+)/.exec(out)?.[1];
+  if (!width || !height) throw new Error('not a readable image');
+  return { width: Number(width), height: Number(height) };
 }
 
 // A copy is up to date if it exists and is newer than the original.
@@ -43,23 +54,34 @@ function resize(src, out, resizeArgs) {
 }
 
 function processPhoto(srcFile, outDir, slug, displayName) {
-  const { width, height } = dimensions(srcFile);
+  let size;
+  try {
+    size = dimensions(srcFile);
+  } catch (error) {
+    throw new Error(`Could not read "${rel(srcFile)}": ${firstLine(error)}`);
+  }
+  const { width, height } = size;
   const is360 = Math.abs(width / height - 2) < 0.02;
+  const longest = Math.max(width, height);
   const viewFile = join(outDir, `${slug}.jpg`);
   const thumbFile = join(outDir, `${slug}-thumb.jpg`);
   let status = 'kept';
 
-  if (!isFresh(viewFile, srcFile)) {
-    // Never enlarge: small originals keep their own size.
-    const viewArgs = is360
-      ? width > VIEW_WIDTH ? ['-z', String(VIEW_HEIGHT), String(VIEW_WIDTH)] : []
-      : ['-Z', String(VIEW_WIDTH)];
-    resize(srcFile, viewFile, viewArgs);
-    status = 'made';
-  }
-  if (!isFresh(thumbFile, srcFile)) {
-    resize(srcFile, thumbFile, ['-Z', String(THUMB_SIZE)]);
-    status = 'made';
+  try {
+    if (!isFresh(viewFile, srcFile)) {
+      // Never enlarge: small originals keep their own size.
+      let viewArgs = [];
+      if (is360 && width > VIEW_WIDTH) viewArgs = ['-z', String(VIEW_HEIGHT), String(VIEW_WIDTH)];
+      else if (!is360 && longest > VIEW_WIDTH) viewArgs = ['-Z', String(VIEW_WIDTH)];
+      resize(srcFile, viewFile, viewArgs);
+      status = 'made';
+    }
+    if (!isFresh(thumbFile, srcFile)) {
+      resize(srcFile, thumbFile, longest > THUMB_SIZE ? ['-Z', String(THUMB_SIZE)] : []);
+      status = 'made';
+    }
+  } catch (error) {
+    throw new Error(`Could not resize "${rel(srcFile)}": ${firstLine(error)}`);
   }
 
   return {
@@ -108,6 +130,10 @@ for (const folderName of folderNames) {
     const slug = slugify(displayName);
     if (!slug) throw new Error(`Photo name "${file}" has no usable letters or digits`);
     if (seenPhotoSlugs.has(slug)) throw new Error(`Two photos in "${name}" turn into "${slug}"`);
+    // "<slug>-thumb.jpg" is the thumbnail file, so no photo may use that name.
+    if (slug.endsWith('-thumb')) {
+      throw new Error(`Photo "${file}" in "${name}" would clash with a thumbnail file; rename it so it does not end in "thumb"`);
+    }
     seenPhotoSlugs.add(slug);
 
     const result = processPhoto(join(SRC, folderName, file), outDir, slug, displayName);

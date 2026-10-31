@@ -12,3 +12,7 @@ A static website for showing 360 photos. See `intent.md`, `spec.md`, and
 3. Commit and push. The site updates.
 
 The originals in `Photos/` stay on this computer and are not committed.
+
+## Check the site
+
+`node test.mjs` runs the automated checks listed in `acceptance.md`.

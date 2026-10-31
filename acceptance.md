@@ -16,7 +16,14 @@ a person on a real phone.
 | A4 | Files are small | Each viewing copy is under 5 MB and each thumbnail is under 150 KB. |
 | A5 | Site stays small | The whole `site/` folder is under 100 MB. |
 | A6 | Nothing too big in git | No tracked file is over 100 MB, and nothing from `Photos/` is tracked. |
-| A7 | Pages reference real files | Every file `index.html` and `js/app.js` load exists, including the vendored libraries. |
+| A7 | Pages reference real files | Every file `index.html` and `js/app.js` load exists, including files the vendored libraries load themselves. |
+| A8 | Page routing works | A pretend browser runs `js/app.js`. Home lists every folder, each folder lists its photos, the viewer shows the photo name and a working back link, unknown folders and photos show an error, and the page listens for route changes. |
+| B1 | Build never enlarges | Small photos keep their own size, both as viewing copy and thumbnail. |
+| B2 | Build refuses clashing names | A photo whose name ends in "thumb" is rejected, because it would share a file with a thumbnail. |
+| B3 | Build names unreadable files | A broken image stops the build with a message naming the file. |
+
+B1 to B3 build into a throwaway copy and need macOS (they are skipped elsewhere).
+A8 and B1 to B3 were added after the independent review in Stage 4.
 
 ## Manual (on a real phone, each release)
 
