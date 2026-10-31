@@ -1,0 +1,133 @@
+{
+  "folders": [
+    {
+      "name": "Czech Republic",
+      "slug": "czech-republic",
+      "cover": "site/photos/czech-republic/dji-fly-20230728-144314-78-1690570852452-pano-thumb.jpg",
+      "photos": [
+        {
+          "name": "dji_fly_20230728_144314_78_1690570852452_pano",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "dji-fly-20230728-144314-78-1690570852452-pano",
+          "file": "site/photos/czech-republic/dji-fly-20230728-144314-78-1690570852452-pano.jpg",
+          "thumb": "site/photos/czech-republic/dji-fly-20230728-144314-78-1690570852452-pano-thumb.jpg"
+        },
+        {
+          "name": "dji_fly_20230730_071324_116_1690715958201_pano",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "dji-fly-20230730-071324-116-1690715958201-pano",
+          "file": "site/photos/czech-republic/dji-fly-20230730-071324-116-1690715958201-pano.jpg",
+          "thumb": "site/photos/czech-republic/dji-fly-20230730-071324-116-1690715958201-pano-thumb.jpg"
+        },
+        {
+          "name": "dji_fly_20230730_141550_140_1690744575531_pano",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "dji-fly-20230730-141550-140-1690744575531-pano",
+          "file": "site/photos/czech-republic/dji-fly-20230730-141550-140-1690744575531-pano.jpg",
+          "thumb": "site/photos/czech-republic/dji-fly-20230730-141550-140-1690744575531-pano-thumb.jpg"
+        },
+        {
+          "name": "dji_fly_20230730_143618_148_1690744671791_pano",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "dji-fly-20230730-143618-148-1690744671791-pano",
+          "file": "site/photos/czech-republic/dji-fly-20230730-143618-148-1690744671791-pano.jpg",
+          "thumb": "site/photos/czech-republic/dji-fly-20230730-143618-148-1690744671791-pano-thumb.jpg"
+        },
+        {
+          "name": "Jetrichovice_pano360",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "jetrichovice-pano360",
+          "file": "site/photos/czech-republic/jetrichovice-pano360.jpg",
+          "thumb": "site/photos/czech-republic/jetrichovice-pano360-thumb.jpg"
+        }
+      ]
+    },
+    {
+      "name": "Tatra Mountains",
+      "slug": "tatra-mountains",
+      "cover": "site/photos/tatra-mountains/img-20260808-140044-016-thumb.jpg",
+      "photos": [
+        {
+          "name": "IMG_20260808_140044_016",
+          "type": "360",
+          "width": 11968,
+          "height": 5984,
+          "slug": "img-20260808-140044-016",
+          "file": "site/photos/tatra-mountains/img-20260808-140044-016.jpg",
+          "thumb": "site/photos/tatra-mountains/img-20260808-140044-016-thumb.jpg"
+        },
+        {
+          "name": "Snapshot_202608220_130872",
+          "type": "360",
+          "width": 7680,
+          "height": 3840,
+          "slug": "snapshot-202608220-130872",
+          "file": "site/photos/tatra-mountains/snapshot-202608220-130872.jpg",
+          "thumb": "site/photos/tatra-mountains/snapshot-202608220-130872-thumb.jpg"
+        },
+        {
+          "name": "Snapshot_202608220_140890",
+          "type": "360",
+          "width": 5760,
+          "height": 2880,
+          "slug": "snapshot-202608220-140890",
+          "file": "site/photos/tatra-mountains/snapshot-202608220-140890.jpg",
+          "thumb": "site/photos/tatra-mountains/snapshot-202608220-140890-thumb.jpg"
+        }
+      ]
+    },
+    {
+      "name": "Valley Forge",
+      "slug": "valley-forge",
+      "cover": "site/photos/valley-forge/dji-0030-thumb.jpg",
+      "photos": [
+        {
+          "name": "DJI_0030",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "dji-0030",
+          "file": "site/photos/valley-forge/dji-0030.jpg",
+          "thumb": "site/photos/valley-forge/dji-0030-thumb.jpg"
+        },
+        {
+          "name": "GroundhogHillDark",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "groundhoghilldark",
+          "file": "site/photos/valley-forge/groundhoghilldark.jpg",
+          "thumb": "site/photos/valley-forge/groundhoghilldark-thumb.jpg"
+        },
+        {
+          "name": "SunsetAbove1469",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "sunsetabove1469",
+          "file": "site/photos/valley-forge/sunsetabove1469.jpg",
+          "thumb": "site/photos/valley-forge/sunsetabove1469-thumb.jpg"
+        },
+        {
+          "name": "VFMAOverField",
+          "type": "360",
+          "width": 8192,
+          "height": 4096,
+          "slug": "vfmaoverfield",
+          "file": "site/photos/valley-forge/vfmaoverfield.jpg",
+          "thumb": "site/photos/valley-forge/vfmaoverfield-thumb.jpg"
+        }
+      ]
+    }
+  ]
+}
