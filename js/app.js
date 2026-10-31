@@ -117,13 +117,39 @@ document.addEventListener('pointerdown', (event) => {
   ripple.addEventListener('animationend', () => ripple.remove());
 });
 
-// Placeholder until step 5 adds the viewer.
-function showViewer(folder, photo) {
+let closeViewer = null;
+
+async function showViewer(folder, photo) {
   setBar(photo.name, `#/${encodeURIComponent(folder.slug)}`);
-  showMessage(`Viewer: ${photo.name} (${photo.type})`);
+  const stage = document.createElement('div');
+  stage.className = 'viewer';
+  viewEl.replaceChildren(stage);
+  document.body.classList.add('is-viewer');
+
+  const myRoute = location.hash;
+  const fail = () => {
+    if (location.hash === myRoute) showMessage('This photo could not be loaded.', true);
+  };
+  try {
+    const viewers = await import('./viewer.js');
+    const close = photo.type === 'flat'
+      ? viewers.showFlat(stage, photo.file, fail)
+      : await viewers.showPanorama(stage, photo.file, fail);
+    // The route may have changed while the viewer was loading.
+    if (location.hash === myRoute) closeViewer = close;
+    else close();
+  } catch (error) {
+    console.error(error);
+    fail();
+  }
 }
 
 function render() {
+  if (closeViewer) {
+    closeViewer();
+    closeViewer = null;
+  }
+  document.body.classList.remove('is-viewer');
   const { folder: folderSlug, photo: photoSlug } = parseRoute();
   window.scrollTo(0, 0);
 

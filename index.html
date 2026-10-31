@@ -5,7 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <title>360 Photos</title>
+  <link rel="stylesheet" href="vendor/photo-sphere-viewer/index.css">
   <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.min.js",
+        "@photo-sphere-viewer/core": "./vendor/photo-sphere-viewer/index.module.js"
+      }
+    }
+  </script>
 </head>
 <body>
   <header class="app-bar">

@@ -168,6 +168,37 @@ body {
   .ripple { display: none; }
 }
 
+/* Viewer: the photo fills the screen below the app bar */
+.is-viewer .view {
+  max-width: none;
+  padding: 0;
+}
+
+.viewer {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - var(--md-bar-height) - env(safe-area-inset-top));
+  height: calc(100dvh - var(--md-bar-height) - env(safe-area-inset-top));
+  background: #000;
+}
+
+.flat {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.flat__img {
+  max-width: 100%;
+  max-height: 100%;
+  user-select: none;
+  -webkit-user-select: none;
+  transform-origin: center;
+}
+
 .message {
   margin: 48px 0;
   text-align: center;
